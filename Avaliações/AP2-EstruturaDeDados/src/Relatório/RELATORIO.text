@@ -1,0 +1,171 @@
+RELATORIO TECNICO - ESTRUTURAS DE DADOS
+Pilhas, Filas e Listas Ligadas
+========================================
+
+4.1 IDENTIFICACAO
+-----------------
+Aluno: Leonardo Gonçalves Wust
+
+
+4.2 INTRODUCAO
+--------------
+Implementar estruturas de dados manualmente forca o programador a entender
+o que acontece por baixo dos panos: como a memoria e alocada para cada no,
+como ponteiros encadeiam esses nos em sequencia e qual o custo real de cada
+operacao. Ao remover um no, e necessario desconectar manualmente suas
+referencias para evitar nos perdidos; em estruturas circulares, o descuido
+com ponteiros pode gerar loops infinitos. Programar sem atalhos torna o
+desenvolvedor capaz de depurar e adaptar qualquer estrutura, inclusive
+as que vem prontas nas bibliotecas padrao.
+
+
+4.3 IMPLEMENTACAO
+-----------------
+
+EXERCICIO 1 - Cafeteria.java
+Estruturas: Fila (FIFO) e Pilha (LIFO) com lista simplesmente ligada.
+
+No:
+int id
+String descricao
+No proximo  ->  aponta para o proximo no (null = fim)
+
+Fila (FilaPedidos):
+Mantem dois ponteiros: cabeca (proximo a ser atendido) e cauda (fim da fila).
+enqueue: cria novo no, cauda.proximo = novo, cauda = novo
+dequeue: salva cabeca, cabeca = cabeca.proximo, retorna o salvo
+Caso critico: quando dequeue esvazia a fila, cauda tambem e setado null
+para nao ficar apontando para um no ja removido.
+
+Pilha (PilhaCancelados):
+Mantem um unico ponteiro: topo.
+push: novo.proximo = topo, topo = novo
+pop:  salva topo, topo = topo.proximo, retorna o salvo
+Caso critico: pop verifica se topo == null antes de qualquer acesso.
+
+---
+
+EXERCICIO 2 - Playlist.java
+Estrutura: Lista duplamente ligada.
+
+No:
+String titulo, artista, album
+int duracao
+NoMusica anterior  ->  no anterior (null na cabeca)
+NoMusica proximo   ->  no seguinte (null na cauda)
+
+O segundo ponteiro (anterior) permite navegar nos dois sentidos.
+
+Insercao no inicio: novo.proximo = cabeca, cabeca.anterior = novo, cabeca = novo
+Insercao no fim:    cauda.proximo = novo, novo.anterior = cauda, cauda = novo
+Insercao por posicao: percorre ate a posicao anterior e ajusta quatro ponteiros.
+
+Remocao: reconecta anterior.proximo e proximo.anterior para saltar o no removido.
+Caso critico: se o no removido e o atual (musica tocando), o ponteiro atual e
+redirecionado para no.proximo antes da remocao.
+
+Ordenacao: Bubble Sort trocando apenas os dados entre nos adjacentes
+(titulo, artista, album, duracao), sem mexer nos ponteiros estruturais.
+
+---
+
+EXERCICIO 3 - CarrosselAnuncios.java
+Estrutura: Lista circular simplesmente ligada.
+
+No:
+int id, contadorExibicoes
+String empresa, descricao
+NoAnuncio proximo  ->  NUNCA null em lista nao-vazia (fecha o ciclo)
+
+Estrategia: ponteiro para a cauda (ultimo no).
+Primeiro no acessado via cauda.proximo em O(1).
+Insercao no inicio e no fim ambas em O(1).
+
+Controle de rotacao: anuncioAtual avanca para anuncioAtual.proximo a cada
+chamada de exibirEAvancar(), circulando infinitamente.
+
+Casos criticos tratados:
+- Lista vazia ao inserir: novo.proximo = novo (no aponta para si mesmo)
+- Remover unico elemento: cauda = null, anuncioAtual = null
+- Remover o anuncioAtual: anuncioAtual = alvo.proximo antes de desconectar
+- Remover a cauda: cauda = anterior apos a desconexao
+- Listagem sem loop infinito: do { ... } while (cursor != inicio)
+  para exatamente ao fechar o ciclo, percorrendo cada no uma unica vez.
+
+
+4.4 EVIDENCIAS DE EXECUCAO
+---------------------------
+
+EXERCICIO 1:
+
+[SISTEMA] Carregando pedidos iniciais...
+[FILA] Pedido #1 (Cafe Expresso + Pao de Queijo) adicionado a fila.
+[FILA] Pedido #2 (Cappuccino + Croissant) adicionado a fila.
+
+=== PEDIDOS PENDENTES ===
+[1] Pedido #1 -> Cafe Expresso + Pao de Queijo
+[2] Pedido #2 -> Cappuccino + Croissant
+[3] Pedido #3 -> Suco de Laranja + Tapioca
+[4] Pedido #4 -> Cha Verde + Bolo de Cenoura
+
+--- ATENDENDO PEDIDO ---
+Pedido #1 (Cafe Expresso + Pao de Queijo) foi ATENDIDO!
+
+--- CANCELANDO PEDIDO ---
+Pedido #2 (Cappuccino + Croissant) foi CANCELADO e movido para a pilha.
+
+--- RESTAURANDO PEDIDO ---
+Pedido #2 (Cappuccino + Croissant) foi RESTAURADO para a fila!
+
+=== PEDIDOS PENDENTES ===
+[1] Pedido #3 -> Suco de Laranja + Tapioca
+[2] Pedido #4 -> Cha Verde + Bolo de Cenoura
+[3] Pedido #2 -> Cappuccino + Croissant   <- restaurado vai ao fim
+
+EXERCICIO 2:
+
+Playlist carregada com 5 musicas.
+
+[1] Bohemian Rhapsody  | Queen        | 5:54   <- atual
+[2] Hotel California   | Eagles       | 6:31
+[3] Stairway to Heaven | Led Zeppelin | 8:02
+[4] Smells Like Teen Spirit | Nirvana | 5:01
+[5] Imagine            | John Lennon  | 3:07
+
+>> Avancando para: "Hotel California" - Eagles
+<< Voltando para: "Bohemian Rhapsody" - Queen
+[OK] Playlist ordenada por titulo.
+
+EXERCICIO 3:
+
+=== CICLO COMPLETO DO CARROSSEL ===
+[1] #1 | TechStore       | 50% OFF em notebooks...  | 0x  <- ATUAL
+[2] #2 | FoodPark        | Melhor hamburguer...      | 0x
+[3] #3 | Academia FitLife| Primeiro mes GRATIS...    | 0x
+[4] #4 | Banco Digital X | Abra sua conta...         | 0x
+Ciclo fecha: #4 -> #1
+
+[-] Anuncio #2 (FoodPark) removido. Ciclo reconectado: #1 -> #3.
+
+[AUTO] Exibindo 3 anuncios automaticamente...
+Exibicao 1: #4 Banco Digital X  (1x)
+Exibicao 2: #1 TechStore        (2x)
+Exibicao 3: #3 Academia FitLife (2x)
+
+
+5. CONCLUSAO
+------------
+A maior dificuldade foi gerenciar os ponteiros nos casos extremos: listas
+vazias, remocao da cabeca ou cauda, e manter o ciclo integro na lista
+circular. A solucao foi tratar cada caso com verificacoes explicitas antes
+da logica geral.
+
+Na lista circular, o risco de loop infinito na listagem foi resolvido com
+do-while(cursor != inicio), percorrendo cada no exatamente uma vez.
+
+Na lista duplamente ligada, a ordenacao por troca de dados (nao de nos)
+simplificou bastante a implementacao sem perda de corretude.
+
+O aprendizado principal foi entender que estruturas de dados sao apenas
+objetos conectados por referencias, e que o programador e inteiramente
+responsavel por manter essas referencias consistentes em toda operacao.
